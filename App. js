@@ -1,0 +1,84 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  // Page load ayyagane tasks fetch cheyadam
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // anni tasks teesuku radam
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/tasks');
+      setTasks(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // kotta task add cheyadam
+  const addTask = async () => {
+    if(!title) return alert("Title ivvali");
+    try {
+      await axios.post('http://localhost:5000/api/tasks', { title, description });
+      setTitle('');
+      setDescription('');
+      fetchTasks();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // task delete cheyadam
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/tasks/${id}`);
+      fetchTasks();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  return (
+    <div style={{ padding: 20, fontFamily: 'Arial' }}>
+      <h1>📝 Task Manager</h1>
+      
+      <div style={{ marginBottom: 20 }}>
+        <input 
+          placeholder="Task Title" 
+          value={title} 
+          onChange={e => setTitle(e.target.value)} 
+          style={{ marginRight: 10, padding: 5 }}
+        />
+        <input 
+          placeholder="Description" 
+          value={description} 
+          onChange={e => setDescription(e.target.value)} 
+          style={{ marginRight: 10, padding: 5 }}
+        />
+        <button onClick={addTask} style={{ padding: '5px 10px' }}>Add Task</button>
+      </div>
+
+      <ul>
+        {tasks.map(task => (
+          <li key={task._id} style={{ marginBottom: 10 }}>
+            <b>{task.title}</b> - {task.description} - <i>{task.status}</i>
+            <button 
+              onClick={() => deleteTask(task._id)}
+              style={{ marginLeft: 10, padding: '3px 8px', background: 'red', color: 'white', border: 'none' }}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
